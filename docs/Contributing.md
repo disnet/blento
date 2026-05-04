@@ -8,9 +8,10 @@ For new cards see [CustomCards](CustomCards.md) and [CardIdeas](CardIdeas.md).
 git clone https://github.com/flo-bit/blento.git
 cd blento
 pnpm install
-pnpm env:setup-dev   # creates .env, fills COOKIE_SECRET + CLIENT_ASSERTION_KEY
 pnpm dev
 ```
+
+No `.env` file required — dev uses the loopback OAuth public client, a fallback cookie secret, and `blento.app` as the default handle for `/`.
 
 Note: if cloudflare authorization website opens when running `pnpm dev` flip the `DB` binding's `"remote": true` to `false` in `wrangler.jsonc` and re-run.
 
@@ -27,7 +28,7 @@ In-progress changes go on a subpage so your live profile stays clean: `/your.han
 
 ## AI-assisted PRs
 
-Welcome — please:
+AI-assisted PRs are accepted, especially if you just create a new card, but please:
 
 - Keep diffs minimal; no unrelated cleanup or verbose code
 - Test light/dark, colored cards, edit/view, desktop and both mobile modes (screen-size and `pointer: coarse`)

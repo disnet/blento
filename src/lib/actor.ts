@@ -30,7 +30,7 @@ export async function getActor({
 				console.error('failed to get custom domain kv', error);
 			}
 		} else {
-			actor = publicEnv.PUBLIC_HANDLE as ActorIdentifier;
+			actor = (publicEnv.PUBLIC_HANDLE || 'blento.app') as ActorIdentifier;
 		}
 	} else if (customDomain && paramActor && blockBoth) {
 		actor = undefined;
