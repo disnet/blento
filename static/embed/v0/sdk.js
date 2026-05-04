@@ -17,6 +17,7 @@
  *   { v: 0,     type: 'blento:resize',      heightPx }
  *   { v: 0,     type: 'blento:navigate',    url }
  *   { v: 0,     type: 'blento:promptLogin' }
+ *   { v: 0,     type: 'blento:notify',      name, payload? }
  *
  * ─── Wire protocol (parent → iframe) ─────────────────────────────────────────
  *   { v: 0, type: 'ready', session }                      // sent once after handshake
@@ -206,6 +207,12 @@
 		},
 		promptLogin: function () {
 			sendToParent({ v: PROTOCOL_VERSION, type: 'blento:promptLogin' });
+		},
+		notify: function (name, payload) {
+			if (typeof name !== 'string' || !name) {
+				throw new BlentoError('invalid_request', 'notify(name): name must be a non-empty string');
+			}
+			sendToParent({ v: PROTOCOL_VERSION, type: 'blento:notify', name: name, payload: payload });
 		}
 	};
 

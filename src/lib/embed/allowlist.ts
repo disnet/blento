@@ -7,7 +7,7 @@ export type AllowlistEntry = {
 
 const PROD_ALLOWLIST: Record<string, AllowlistEntry> = {
 	'https://atmo.rsvp': {
-		collectionPrefixes: ['community.lexicon.calendar.'],
+		collectionPrefixes: ['community.lexicon.calendar.', 'app.bsky.feed.post'],
 		label: 'atmo.rsvp'
 	}
 };
@@ -33,7 +33,8 @@ export function isAllowedOrigin(origin: string): boolean {
 
 function matchesPrefix(collection: string, prefix: string): boolean {
 	if (prefix === '*') return true;
-	return collection === prefix.replace(/\.$/, '') || collection.startsWith(prefix);
+	if (prefix.endsWith('.')) return collection.startsWith(prefix);
+	return collection === prefix;
 }
 
 export function isAllowedCollection(origin: string, collection: string): boolean {
