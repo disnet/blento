@@ -21,6 +21,7 @@
 		maxHeight?: number;
 		title?: string;
 		class?: string;
+		onnotify?: (name: string, payload: unknown) => void;
 	};
 
 	let {
@@ -31,7 +32,8 @@
 		minHeight = 80,
 		maxHeight = 20000,
 		title = 'Embedded content',
-		class: className = ''
+		class: className = '',
+		onnotify
 	}: Props = $props();
 
 	const PROTOCOL_VERSION = 0;
@@ -61,8 +63,8 @@
 	function isAllowedCollectionLocal(collection: string): boolean {
 		return allowedCollectionPrefixes.some((p) => {
 			if (p === '*') return true;
-			const stripped = p.replace(/\.$/, '');
-			return collection === stripped || collection.startsWith(p);
+			if (p.endsWith('.')) return collection.startsWith(p);
+			return collection === p;
 		});
 	}
 
@@ -204,6 +206,11 @@
 
 		if (data.type === 'blento:promptLogin') {
 			atProtoLoginModalState.show();
+			return;
+		}
+
+		if (data.type === 'blento:notify' && typeof data.name === 'string') {
+			onnotify?.(data.name, data.payload);
 			return;
 		}
 

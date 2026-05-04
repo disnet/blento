@@ -131,6 +131,7 @@
 			<button id="btn-resize">notifyResize(800)</button>
 			<button id="btn-navigate">notifyNavigate('/')</button>
 			<button id="btn-prompt-login">promptLogin()</button>
+			<button id="btn-notify">notify('test-event', {ts})</button>
 		</div>
 
 		<div class="field">
@@ -253,6 +254,12 @@
 			$('btn-prompt-login').onclick = () => {
 				window.Blento.promptLogin();
 				show('promptLogin() sent', null);
+			};
+
+			$('btn-notify').onclick = () => {
+				const payload = { ts: Date.now() };
+				window.Blento.notify('test-event', payload);
+				show('notify("test-event") sent', payload);
 			};
 
 			if (window.Blento.getTheme().dark) {

@@ -4,6 +4,7 @@
 	import { user } from '$lib/atproto';
 
 	let origin = $state('');
+	let lastNotify = $state<{ name: string; payload: unknown; at: number } | null>(null);
 
 	onMount(() => {
 		origin = window.location.origin;
@@ -24,6 +25,12 @@
 		<p class="text-sm opacity-70">
 			Logged in as: <strong>{user.profile?.handle ?? user.did ?? 'not signed in'}</strong>
 		</p>
+		{#if lastNotify}
+			<p class="text-sm opacity-70">
+				Last notify: <code>{lastNotify.name}</code> ·
+				<code>{JSON.stringify(lastNotify.payload)}</code>
+			</p>
+		{/if}
 	</header>
 
 	{#if origin}
@@ -34,6 +41,9 @@
 			height={700}
 			title="Embed SDK test harness"
 			class="w-full rounded-lg border border-black/10 dark:border-white/10"
+			onnotify={(name, payload) => {
+				lastNotify = { name, payload, at: Date.now() };
+			}}
 		/>
 	{/if}
 </main>
