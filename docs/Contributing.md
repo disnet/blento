@@ -9,16 +9,12 @@ git clone https://github.com/flo-bit/blento.git
 cd blento
 pnpm install
 pnpm env:setup-dev   # creates .env, fills COOKIE_SECRET + CLIENT_ASSERTION_KEY
+pnpm dev
 ```
 
-In `wrangler.jsonc`, flip the `DB` binding's `"remote": true` to `false` if not already set to false (don't commit that). Otherwise `pnpm dev` and `pnpm backfill` write to production and need cloudflare credentials.
+Note: if cloudflare authorization website opens when running `pnpm dev` flip the `DB` binding's `"remote": true` to `false` in `wrangler.jsonc` and re-run.
 
-```sh
-pnpm dev         # site falls back to PDS when D1 is empty — no backfill needed
-pnpm backfill    # populates local D1 via contrail; needed only for /xrpc/* paths and the UpdatedBlentos card
-```
-
-`pnpm backfill` is resumable, takes a few minutes the first time.
+Individual `/handle` pages load directly from each user's PDS — no backfill needed.
 
 ## Before opening a PR
 
