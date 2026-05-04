@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Badge, Button, Modal } from '@foxui/core';
+	import { Badge } from '@foxui/core';
 	import { getAdditionalUserData, getDidContext, getHandleContext } from '$lib/website/context';
 	import type { ContentComponentProps } from '../../types';
 	import { UpcomingEventsCardDefinition } from '.';
 	import type { EventData } from '../EventCard';
 	import { user } from '$lib/atproto';
 	import { qrOverlay } from '$lib/components/qr/qrOverlay.svelte';
-	let showCreateModal = $state(false);
 
 	let { item }: ContentComponentProps = $props();
 
@@ -143,8 +142,10 @@
 						/>
 					</svg>
 				</button>
-				<button
-					onclick={() => (showCreateModal = true)}
+				<a
+					href="/event/create"
+					target="_blank"
+					rel="noopener"
 					title="Create new event"
 					class="bg-base-100 hover:bg-base-200 dark:bg-base-800 dark:hover:bg-base-700 accent:bg-accent-400/30 accent:hover:bg-accent-400/50 text-base-700 dark:text-base-300 z-50 flex size-7 cursor-pointer items-center justify-center rounded-lg transition-colors"
 				>
@@ -158,7 +159,7 @@
 					>
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 					</svg>
-				</button>
+				</a>
 			</div>
 		{/if}
 	</div>
@@ -251,18 +252,3 @@
 		{/if}
 	</div>
 </div>
-
-<Modal bind:open={showCreateModal}>
-	<div class="flex flex-col gap-4">
-		<h3 class="text-lg font-semibold">Create Event</h3>
-		<p class="text-base-600 dark:text-base-400 text-sm">
-			Create events on atmo.rsvp, these events will show up here (might take a few minutes).
-		</p>
-		<div class="flex justify-end gap-2">
-			<Button variant="ghost" onclick={() => (showCreateModal = false)}>Cancel</Button>
-			<Button href="https://atmo.rsvp" target="_blank" onclick={() => (showCreateModal = false)}>
-				Go to atmo.rsvp
-			</Button>
-		</div>
-	</div>
-</Modal>

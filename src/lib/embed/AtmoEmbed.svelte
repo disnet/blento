@@ -19,6 +19,7 @@
 		height?: number;
 		minHeight?: number;
 		maxHeight?: number;
+		fill?: boolean;
 		title?: string;
 		class?: string;
 		onnotify?: (name: string, payload: unknown) => void;
@@ -31,6 +32,7 @@
 		height = 400,
 		minHeight = 80,
 		maxHeight = 20000,
+		fill = false,
 		title = 'Embedded content',
 		class: className = '',
 		onnotify
@@ -48,6 +50,7 @@
 	let iframeEl: HTMLIFrameElement | null = $state(null);
 	let resizedHeight: number | null = $state(null);
 	let displayHeight = $derived(resizedHeight ?? height);
+	let heightStyle = $derived(fill ? '100%' : `${displayHeight}px`);
 	let handshakeDone = $state(false);
 
 	const session: Session = $derived.by<Session>(() => {
@@ -91,6 +94,10 @@
 
 	function postToIframe(message: unknown) {
 		if (!iframeEl?.contentWindow) return;
+		if (browser && import.meta.env.DEV) {
+			const m = message as { type?: unknown; id?: unknown; ok?: unknown };
+			console.debug('[AtmoEmbed] →', m.type ?? `response#${m.id} ok=${m.ok}`, message);
+		}
 		iframeEl.contentWindow.postMessage(message, origin);
 	}
 
@@ -173,13 +180,37 @@
 	}
 
 	function handleMessage(ev: MessageEvent) {
+		if (browser && import.meta.env.DEV) {
+			console.debug('[AtmoEmbed] raw message', {
+				origin: ev.origin,
+				sourceMatches: !!iframeEl && ev.source === iframeEl.contentWindow,
+				data: ev.data
+			});
+		}
 		if (!iframeEl) return;
 		if (ev.source !== iframeEl.contentWindow) return;
-		if (ev.origin !== origin) return;
+		if (ev.origin !== origin) {
+			console.warn('[AtmoEmbed] dropped message: origin mismatch', {
+				expected: origin,
+				received: ev.origin
+			});
+			return;
+		}
 
 		const data = ev.data;
 		if (!data || typeof data !== 'object') return;
-		if (data.v !== PROTOCOL_VERSION) return;
+		if (data.v !== PROTOCOL_VERSION) {
+			console.warn('[AtmoEmbed] dropped message: version mismatch', {
+				expected: PROTOCOL_VERSION,
+				received: (data as { v?: unknown }).v,
+				type: (data as { type?: unknown }).type
+			});
+			return;
+		}
+
+		if (browser && import.meta.env.DEV) {
+			console.debug('[AtmoEmbed] ←', data.type ?? '(response)', data);
+		}
 
 		if (data.type === 'hello') {
 			handshakeDone = true;
@@ -240,7 +271,7 @@
 	bind:this={iframeEl}
 	{title}
 	class={className}
-	style:height="{displayHeight}px"
+	style:height={heightStyle}
 	style:width="100%"
 	style:border="0"
 	style:display="block"
