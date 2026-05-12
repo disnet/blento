@@ -23,6 +23,7 @@
 	import {
 		setIsCoarse,
 		setIsMobile,
+		setIsRealMobile,
 		setSelectedCardId,
 		setSelectCard,
 		setToggleCardSettings
@@ -105,10 +106,12 @@
 	let gridRefs = new SvelteMap<string, HTMLDivElement>();
 
 	let showingMobileView = $state(false);
-	let isMobile = $derived(showingMobileView || (innerWidth.current ?? 1000) < 1024);
+	let isRealMobile = $derived((innerWidth.current ?? 1000) < 1024);
+	let isMobile = $derived(showingMobileView || isRealMobile);
 	let showMobileWarning = $state((innerWidth.current ?? 1000) < 1024);
 
 	setIsMobile(() => isMobile);
+	setIsRealMobile(() => isRealMobile);
 
 	// svelte-ignore state_referenced_locally
 	let editedOn = $state(data.publication.preferences?.editedOn ?? 0);
@@ -141,17 +144,15 @@
 	$effect(() => {
 		if (!selectedCard) {
 			cardSettingsOpen = false;
-		} else if (!isMobile) {
-			cardSettingsOpen = true;
 		}
 	});
 
 	setToggleCardSettings((id: string) => {
 		if (selectedCardId === id) {
-			selectedCardId = null;
+			cardSettingsOpen = !cardSettingsOpen;
 		} else {
 			selectedCardId = id;
-			if (!isMobile) cardSettingsOpen = true;
+			cardSettingsOpen = true;
 		}
 	});
 
@@ -528,7 +529,7 @@
 
 	<MobileSelectionBar
 		{data}
-		visible={isMobile && selectedCard !== null && !cardSettingsOpen}
+		visible={isRealMobile && selectedCard !== null && !cardSettingsOpen}
 		onopensettings={() => (cardSettingsOpen = true)}
 		ondeselect={() => (selectedCardId = null)}
 	/>

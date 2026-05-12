@@ -11,6 +11,7 @@
 		getCanEdit,
 		getIsCoarse,
 		getIsMobile,
+		getIsRealMobile,
 		getSelectedCardId,
 		getSelectCard,
 		getToggleCardSettings
@@ -61,6 +62,7 @@
 
 	let canEdit = getCanEdit();
 	let isMobile = getIsMobile();
+	let isRealMobile = getIsRealMobile();
 	let isCoarse = getIsCoarse();
 
 	let selectedCardId = getSelectedCardId();
@@ -68,7 +70,6 @@
 	let toggleCardSettings = getToggleCardSettings();
 	let isSelected = $derived(selectedCardId?.() === item.id);
 
-	// Track pointer down position so we only select on click, not on drag
 	let overlayDownX = 0;
 	let overlayDownY = 0;
 	function handleOverlayPointerDown(e: PointerEvent) {
@@ -78,9 +79,11 @@
 	function handleOverlayPointerUp(e: PointerEvent) {
 		const dx = Math.abs(e.clientX - overlayDownX);
 		const dy = Math.abs(e.clientY - overlayDownY);
-		if (dx < 5 && dy < 5) {
-			selectCard?.(item.id);
-		}
+		if (dx >= 5 || dy >= 5) return;
+		// Defer to next frame so the synthetic click from this tap fires while
+		// the overlay is still mounted — otherwise the click falls through to
+		// whatever inner button is now exposed (file picker, popover trigger, …).
+		requestAnimationFrame(() => selectCard?.(item.id));
 	}
 
 	let colorPopoverOpen = $state(false);
@@ -204,7 +207,7 @@
 	showOutline={isResizing || isSelected}
 	class={[
 		'scale-100 starting:scale-0 starting:opacity-0',
-		isSelected ? 'outline-accent-500 z-10' : ''
+		isSelected ? 'outline-accent-500 z-10 touch-none' : ''
 	]}
 	{...rest}
 >
@@ -213,13 +216,16 @@
 			 select text / trigger inner content. Click (no drag) selects the card. -->
 		<div
 			role="button"
+			aria-label="Select card"
 			tabindex="-1"
-			class="absolute inset-0 z-20 cursor-pointer focus:outline-none"
+			class="absolute inset-0 z-30 cursor-pointer focus:outline-none"
 			onpointerdown={handleOverlayPointerDown}
 			onpointerup={handleOverlayPointerUp}
 		></div>
 	{/if}
-	{@render children?.()}
+	<div class={isSelected ? 'contents' : 'inert-content'}>
+		{@render children?.()}
+	</div>
 
 	{#if cardDef.canHaveLabel}
 		<div
@@ -313,7 +319,7 @@
 			<div
 				class={[
 					'translate absolute -bottom-9 w-full items-center justify-center pt-2.5 text-xs lg:group-focus-within:inline-flex lg:group-hover/card:inline-flex',
-					colorPopoverOpen || isSelected ? 'inline-flex' : 'hidden'
+					isRealMobile() ? 'hidden' : colorPopoverOpen || isSelected ? 'inline-flex' : 'hidden'
 				]}
 			>
 				<div
@@ -467,3 +473,12 @@
 		{/if}
 	{/snippet}
 </BaseCard>
+
+<style>
+	.inert-content {
+		display: contents;
+	}
+	.inert-content :global(*) {
+		pointer-events: none !important;
+	}
+</style>

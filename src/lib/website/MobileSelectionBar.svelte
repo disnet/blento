@@ -18,7 +18,7 @@
 </script>
 
 {#if visible && (dev || (user.isLoggedIn && user.profile?.did === data.did))}
-	<div class="fixed inset-x-0 bottom-2 z-50 flex justify-center px-4">
+	<div class="fixed bottom-4 left-4 z-50">
 		<Navbar
 			class="dark:bg-base-950 bg-base-100 relative top-auto mt-0 h-11 w-auto rounded-full px-2"
 		>
