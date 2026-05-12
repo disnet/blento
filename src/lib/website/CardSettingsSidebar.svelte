@@ -3,6 +3,7 @@
 	import { CardDefinitionsByType, getColor } from '$lib/cards';
 	import type { Item } from '$lib/types';
 	import { ColorSelect } from '@foxui/colors';
+	import { dev } from '$app/environment';
 
 	let {
 		open,
@@ -95,6 +96,19 @@
 	const selectedCustomColor = $derived(
 		colorMode === 'custom' ? allColorChoices.find((c) => c.label === currentColor) : undefined
 	);
+
+	type TabId = 'content' | 'design';
+	const allTabs: { id: TabId; label: string }[] = [
+		{ id: 'content', label: 'Content' },
+		{ id: 'design', label: 'Design' }
+	];
+	const tabs = $derived(allTabs.filter((t) => t.id !== 'content' || cardDef?.settingsComponent));
+	let activeTab: TabId = $state('content');
+	$effect(() => {
+		// When the selected card changes, default to Content if available, else Design.
+		item?.id;
+		activeTab = cardDef?.settingsComponent ? 'content' : 'design';
+	});
 </script>
 
 <aside
@@ -103,118 +117,148 @@
 		open ? 'translate-x-0' : '-translate-x-full'
 	]}
 >
-	<div
-		class="border-base-200 dark:border-base-800 flex items-center justify-between border-b px-4 py-3"
-	>
-		<h2 class="text-base-900 dark:text-base-100 text-sm font-semibold">Card settings</h2>
-		<button
-			type="button"
-			class="text-base-500 hover:text-base-700 dark:text-base-400 dark:hover:text-base-200 cursor-pointer rounded-lg p-1"
-			onclick={onclose}
-			aria-label="Close card settings"
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="2"
-				stroke="currentColor"
-				class="size-4"
+	<div class="border-base-200 dark:border-base-800 border-b px-4 pt-3">
+		<div class="flex items-center justify-between">
+			<h2 class="text-base-900 dark:text-base-100 text-sm font-semibold">Card settings</h2>
+			<button
+				type="button"
+				class="text-base-500 hover:text-base-700 dark:text-base-400 dark:hover:text-base-200 cursor-pointer rounded-lg p-1"
+				onclick={onclose}
+				aria-label="Close card settings"
 			>
-				<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-			</svg>
-		</button>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+					stroke="currentColor"
+					class="size-4"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+				</svg>
+			</button>
+		</div>
+		{#if tabs.length > 1}
+			<nav class="-mb-px flex gap-1 pt-3">
+				{#each tabs as tab (tab.id)}
+					<button
+						type="button"
+						class={[
+							'cursor-pointer rounded-t-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap',
+							activeTab === tab.id
+								? 'bg-base-200 dark:bg-base-800 text-base-900 dark:text-base-100'
+								: 'text-base-500 dark:text-base-400 hover:text-base-700 dark:hover:text-base-300'
+						]}
+						onclick={() => (activeTab = tab.id)}
+					>
+						{tab.label}
+					</button>
+				{/each}
+			</nav>
+		{:else}
+			<div class="pb-3"></div>
+		{/if}
 	</div>
 
 	{#if item && cardDef}
 		<div class="flex flex-col gap-6 px-4 py-4">
-			{#if cardDef.allowSetColor !== false}
-				<section class="flex flex-col gap-3">
-					<h3 class="text-base-500 dark:text-base-400 text-xs font-semibold uppercase">Color</h3>
-					<div class="flex flex-wrap gap-1.5">
-						{#each colorModes as mode (mode)}
-							<button
-								type="button"
-								class={[
-									'cursor-pointer rounded-md border px-2.5 py-1 text-xs font-medium capitalize transition-colors',
-									colorMode === mode
-										? 'border-accent-500 bg-accent-500/10 text-accent-600 dark:text-accent-400'
-										: 'border-base-200 dark:border-base-700 text-base-700 dark:text-base-300 hover:bg-base-100 dark:hover:bg-base-800'
-								]}
-								onclick={() => setColorMode(mode)}
-							>
-								{mode}
-							</button>
-						{/each}
-					</div>
-					{#if colorMode === 'custom'}
-						<ColorSelect
-							selected={selectedCustomColor}
-							colors={allColorChoices}
-							onselected={(color) => {
-								if (typeof color === 'string') return;
-								pickCustomColor(color.label);
-							}}
-							class="w-full"
-						/>
-					{/if}
-				</section>
-			{/if}
+			{#if activeTab === 'content' && cardDef.settingsComponent}
+				<cardDef.settingsComponent {item} {onclose} />
+			{:else if activeTab === 'design'}
+				{#if cardDef.allowSetColor !== false}
+					<section class="flex flex-col gap-3">
+						<h3 class="text-base-500 dark:text-base-400 text-xs font-semibold uppercase">Color</h3>
+						<div class="flex flex-wrap gap-1.5">
+							{#each colorModes as mode (mode)}
+								<button
+									type="button"
+									class={[
+										'cursor-pointer rounded-md border px-2.5 py-1 text-xs font-medium capitalize transition-colors',
+										colorMode === mode
+											? 'border-accent-500 bg-accent-500/10 text-accent-600 dark:text-accent-400'
+											: 'border-base-200 dark:border-base-700 text-base-700 dark:text-base-300 hover:bg-base-100 dark:hover:bg-base-800'
+									]}
+									onclick={() => setColorMode(mode)}
+								>
+									{mode}
+								</button>
+							{/each}
+						</div>
+						{#if colorMode === 'custom'}
+							<ColorSelect
+								selected={selectedCustomColor}
+								colors={allColorChoices}
+								onselected={(color) => {
+									if (typeof color === 'string') return;
+									pickCustomColor(color.label);
+								}}
+								class="w-full"
+							/>
+						{/if}
+					</section>
+				{/if}
 
-			{#if cardDef.canResize !== false}
-				<section class="flex flex-col gap-3">
-					<h3 class="text-base-500 dark:text-base-400 text-xs font-semibold uppercase">Size</h3>
-					<div class="flex items-center gap-2">
-						{#if canSetSize(2, 2)}
-							<button
-								type="button"
-								onclick={() => setSize(2, 2)}
-								class="border-base-200 dark:border-base-700 hover:bg-accent-500/10 flex cursor-pointer items-center justify-center rounded-lg border p-2.5"
-								aria-label="Small square"
-							>
-								<div class="border-base-900 dark:border-base-50 size-3 rounded-sm border-2"></div>
-							</button>
-						{/if}
-						{#if canSetSize(4, 2)}
-							<button
-								type="button"
-								onclick={() => setSize(4, 2)}
-								class="border-base-200 dark:border-base-700 hover:bg-accent-500/10 flex cursor-pointer items-center justify-center rounded-lg border p-2.5"
-								aria-label="Wide"
-							>
-								<div class="border-base-900 dark:border-base-50 h-3 w-6 rounded-sm border-2"></div>
-							</button>
-						{/if}
-						{#if canSetSize(2, 4)}
-							<button
-								type="button"
-								onclick={() => setSize(2, 4)}
-								class="border-base-200 dark:border-base-700 hover:bg-accent-500/10 flex cursor-pointer items-center justify-center rounded-lg border p-2.5"
-								aria-label="Tall"
-							>
-								<div class="border-base-900 dark:border-base-50 h-6 w-3 rounded-sm border-2"></div>
-							</button>
-						{/if}
-						{#if canSetSize(4, 4)}
-							<button
-								type="button"
-								onclick={() => setSize(4, 4)}
-								class="border-base-200 dark:border-base-700 hover:bg-accent-500/10 flex cursor-pointer items-center justify-center rounded-lg border p-2.5"
-								aria-label="Large square"
-							>
-								<div class="border-base-900 dark:border-base-50 size-6 rounded-sm border-2"></div>
-							</button>
-						{/if}
-					</div>
-				</section>
+				{#if cardDef.canResize !== false}
+					<section class="flex flex-col gap-3">
+						<h3 class="text-base-500 dark:text-base-400 text-xs font-semibold uppercase">Size</h3>
+						<div class="flex items-center gap-2">
+							{#if canSetSize(2, 2)}
+								<button
+									type="button"
+									onclick={() => setSize(2, 2)}
+									class="border-base-200 dark:border-base-700 hover:bg-accent-500/10 flex cursor-pointer items-center justify-center rounded-lg border p-2.5"
+									aria-label="Small square"
+								>
+									<div class="border-base-900 dark:border-base-50 size-3 rounded-sm border-2"></div>
+								</button>
+							{/if}
+							{#if canSetSize(4, 2)}
+								<button
+									type="button"
+									onclick={() => setSize(4, 2)}
+									class="border-base-200 dark:border-base-700 hover:bg-accent-500/10 flex cursor-pointer items-center justify-center rounded-lg border p-2.5"
+									aria-label="Wide"
+								>
+									<div
+										class="border-base-900 dark:border-base-50 h-3 w-6 rounded-sm border-2"
+									></div>
+								</button>
+							{/if}
+							{#if canSetSize(2, 4)}
+								<button
+									type="button"
+									onclick={() => setSize(2, 4)}
+									class="border-base-200 dark:border-base-700 hover:bg-accent-500/10 flex cursor-pointer items-center justify-center rounded-lg border p-2.5"
+									aria-label="Tall"
+								>
+									<div
+										class="border-base-900 dark:border-base-50 h-6 w-3 rounded-sm border-2"
+									></div>
+								</button>
+							{/if}
+							{#if canSetSize(4, 4)}
+								<button
+									type="button"
+									onclick={() => setSize(4, 4)}
+									class="border-base-200 dark:border-base-700 hover:bg-accent-500/10 flex cursor-pointer items-center justify-center rounded-lg border p-2.5"
+									aria-label="Large square"
+								>
+									<div class="border-base-900 dark:border-base-50 size-6 rounded-sm border-2"></div>
+								</button>
+							{/if}
+						</div>
+					</section>
+				{/if}
 			{/if}
+		</div>
+	{/if}
 
-			{#if cardDef.settingsComponent}
-				<section class="flex flex-col gap-3">
-					<h3 class="text-base-500 dark:text-base-400 text-xs font-semibold uppercase">Options</h3>
-					<cardDef.settingsComponent {item} {onclose} />
-				</section>
-			{/if}
+	{#if dev && item}
+		<div
+			class="border-base-200 dark:border-base-800 text-base-500 dark:text-base-400 mt-auto border-t px-4 py-2 font-mono text-xs"
+		>
+			<span class="opacity-60">type:</span>
+			{item.cardType}
 		</div>
 	{/if}
 </aside>
