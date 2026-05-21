@@ -7,11 +7,7 @@
  * is to either pull `rsvp.atmo.*` lexicons into blento's `lex.config.js` or
  * publish them as a shared package.
  */
-import type {
-	FlatEventRecord,
-	HostProfile,
-	AttendeeInfo
-} from '@atmo-dev/events-ui';
+import type { FlatEventRecord, HostProfile, AttendeeInfo } from '@atmo-dev/events-ui';
 import { RSVP_GOING, RSVP_INTERESTED, getProfileUrl } from '@atmo-dev/events-ui';
 
 const ATMO_APPVIEW = 'https://atmo.rsvp';
@@ -107,10 +103,7 @@ function flattenAtmoEvent(record: AtmoEventRecord): FlatEventRecord | null {
 	};
 }
 
-export function getHostProfile(
-	did: string,
-	profiles?: AtmoProfileEntry[]
-): HostProfile | null {
+export function getHostProfile(did: string, profiles?: AtmoProfileEntry[]): HostProfile | null {
 	const profile = profiles?.find((entry) => entry.did === did);
 	if (!profile) return null;
 	return {
@@ -138,9 +131,7 @@ function buildAttendee(
 	};
 }
 
-export function getRsvpStatus(
-	status?: string
-): 'going' | 'interested' | 'notgoing' | null {
+export function getRsvpStatus(status?: string): 'going' | 'interested' | 'notgoing' | null {
 	if (!status) return null;
 	if (status === RSVP_GOING || status.endsWith('#going')) return 'going';
 	if (status === RSVP_INTERESTED || status.endsWith('#interested')) return 'interested';
@@ -214,9 +205,7 @@ export async function fetchAtmoEventAttendees(eventUri: string): Promise<Attende
 
 	return {
 		going: uniqueGoing.map((r) => buildAttendee(r.did, 'going', goingProfiles)),
-		interested: uniqueInterested.map((r) =>
-			buildAttendee(r.did, 'interested', interestedProfiles)
-		),
+		interested: uniqueInterested.map((r) => buildAttendee(r.did, 'interested', interestedProfiles)),
 		goingCount: uniqueGoing.length,
 		interestedCount: uniqueInterested.length
 	};
@@ -249,7 +238,8 @@ export interface VodRecord {
 	playlistUrl: string;
 }
 
-const VOD_PLAYBACK_BASE = 'https://vod-beta.stream.place/xrpc/place.stream.playback.getVideoPlaylist';
+const VOD_PLAYBACK_BASE =
+	'https://vod-beta.stream.place/xrpc/place.stream.playback.getVideoPlaylist';
 
 export function vodFromAtUri(atUri: string): VodRecord {
 	return {

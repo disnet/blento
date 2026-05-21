@@ -1,11 +1,18 @@
 import type { CardDefinition } from '../../types';
 import BigSocialCard from './BigSocialCard.svelte';
 import CreateBigSocialCardModal from './CreateBigSocialCardModal.svelte';
+import SourceSettings from '../../_settings/SourceSettings.svelte';
 
 export const BigSocialCardDefinition = {
 	type: 'bigsocial',
 	contentComponent: BigSocialCard,
 	creationModalComponent: CreateBigSocialCardModal,
+	settingsComponent: SourceSettings,
+	source: {
+		label: 'Profile URL',
+		placeholder: 'instagram.com/you',
+		errorMessage: "Couldn't detect that platform"
+	},
 
 	createNew: (card) => {
 		card.cardType = 'bigsocial';

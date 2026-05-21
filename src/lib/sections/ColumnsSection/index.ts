@@ -1,18 +1,20 @@
 import type { SectionDefinition } from '../types';
-import EditingRowSection from './EditingRowSection.svelte';
-import RowSection from './RowSection.svelte';
+import EditingColumnsSection from './EditingColumnsSection.svelte';
+import ColumnsSection from './ColumnsSection.svelte';
+import ColumnsSectionSettings from './ColumnsSectionSettings.svelte';
 
-export function defaultRowSectionData(): Record<string, any> {
+export function defaultColumnsSectionData(): Record<string, any> {
 	return {
 		scrollMode: 'scroll' // 'scroll' | 'fit'
 	};
 }
 
-export const RowSectionDefinition: SectionDefinition = {
-	type: 'row',
-	contentComponent: RowSection,
-	editingContentComponent: EditingRowSection,
-	defaultSectionData: defaultRowSectionData,
+export const ColumnsSectionDefinition: SectionDefinition = {
+	type: 'columns',
+	contentComponent: ColumnsSection,
+	editingContentComponent: EditingColumnsSection,
+	settingsComponent: ColumnsSectionSettings,
+	defaultSectionData: defaultColumnsSectionData,
 	cardFilter: (def) => (def.minW ?? 2) <= 2 && (def.minH ?? 2) <= 2,
 	allowRotate: true,
 	addItem: (item, allItems) => {
@@ -29,6 +31,6 @@ export const RowSectionDefinition: SectionDefinition = {
 	},
 	deleteItem: (itemId, allItems) => allItems.filter((i) => i.id !== itemId),
 	resizeItem: () => {},
-	name: 'Row',
+	name: 'Columns',
 	icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><rect x="3" y="8" width="5" height="8" rx="1"/><rect x="10" y="8" width="5" height="8" rx="1"/><rect x="17" y="8" width="5" height="8" rx="1"/></svg>`
 };

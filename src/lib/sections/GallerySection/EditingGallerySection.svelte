@@ -107,7 +107,13 @@
 	bind:this={containerRef}
 	class="@container/grid pointer-events-auto relative col-span-3 px-2 py-8"
 >
-	<SectionChrome {isActive} {hovered} name={section.name || 'Gallery'} {icon} />
+	<SectionChrome
+		sectionId={section.id}
+		{isActive}
+		{hovered}
+		name={section.name || 'Gallery'}
+		{icon}
+	/>
 
 	{#if sectionItems.length > 0}
 		<div class="gallery-compact">

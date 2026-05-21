@@ -26,12 +26,14 @@
 		setIsRealMobile,
 		setSelectedCardId,
 		setSelectCard,
-		setToggleCardSettings
+		setToggleCardSettings,
+		setOpenSectionSettings
 	} from './context';
 	import Context from './Context.svelte';
 	import Head from './Head.svelte';
 	import SettingsOverlay from './settings/SettingsOverlay.svelte';
-	import CardSettingsSidebar from './CardSettingsSidebar.svelte';
+	import SettingsSidebar from './SettingsSidebar.svelte';
+	import InsertSectionButton from './InsertSectionButton.svelte';
 	import EditTopBar from './EditTopBar.svelte';
 	import MobileSelectionBar from './MobileSelectionBar.svelte';
 	// import PageSwitcherBar from './PageSwitcherBar.svelte';
@@ -39,8 +41,6 @@
 	import { user } from '$lib/atproto';
 	import * as TID from '@atcute/tid';
 	import { launchConfetti } from '@foxui/visual';
-
-	// import SectionsSidebar from './SectionsSidebar.svelte';
 
 	import { createImageCard, createVideoCard } from './file-processing';
 	import CardCommand from '$lib/components/card-command/CardCommand.svelte';
@@ -137,15 +137,43 @@
 		selectedCardId ? (items.find((i) => i.id === selectedCardId) ?? null) : null
 	);
 
+	let selectedSectionId: string | null = $state(null);
+	let selectedSection = $derived(
+		selectedSectionId ? (sections.find((s) => s.id === selectedSectionId) ?? null) : null
+	);
+
+	// svelte-ignore state_referenced_locally
+	let activeSectionId = $state(sections[0]?.id);
+
+	// The editor sidebar drills down: layout (all sections) → section → card.
+	let sidebarLevel: 'card' | 'section' | 'layout' = $derived(
+		selectedCardId ? 'card' : selectedSectionId ? 'section' : 'layout'
+	);
+
+	function selectSectionFor(cardId: string) {
+		if (!sectionsEditingEnabled) return;
+		const secId = items.find((i) => i.id === cardId)?.sectionId ?? null;
+		if (secId) {
+			selectedSectionId = secId;
+			activeSectionId = secId;
+		}
+	}
+
 	setSelectedCardId(() => selectedCardId);
 	setSelectCard((id: string | null) => {
 		selectedCardId = id;
+		if (id) selectSectionFor(id);
 	});
 
 	let cardSettingsOpen = $state(false);
+
+	// If the selected card is removed (e.g. deleted), drop the selection. With
+	// sections enabled this falls back to the section level; otherwise it closes
+	// the sidebar (matching the no-sections behaviour).
 	$effect(() => {
-		if (!selectedCard) {
-			cardSettingsOpen = false;
+		if (selectedCardId && !items.find((i) => i.id === selectedCardId)) {
+			selectedCardId = null;
+			if (!sectionsEditingEnabled) cardSettingsOpen = false;
 		}
 	});
 
@@ -154,9 +182,47 @@
 			cardSettingsOpen = !cardSettingsOpen;
 		} else {
 			selectedCardId = id;
+			selectSectionFor(id);
 			cardSettingsOpen = true;
 		}
 	});
+
+	setOpenSectionSettings((id: string) => openSection(id));
+
+	function openSection(id: string) {
+		selectedSectionId = id;
+		selectedCardId = null;
+		activeSectionId = id;
+		cardSettingsOpen = true;
+	}
+
+	// Layout toggle button: open the all-sections overview, or close if already there.
+	function toggleLayout() {
+		if (cardSettingsOpen && sidebarLevel === 'layout') {
+			cardSettingsOpen = false;
+		} else {
+			selectedCardId = null;
+			selectedSectionId = null;
+			cardSettingsOpen = true;
+		}
+	}
+
+	// Close the sidebar entirely and clear any selection.
+	function deselect() {
+		selectedCardId = null;
+		selectedSectionId = null;
+		cardSettingsOpen = false;
+	}
+
+	// Breadcrumb navigation: step up a level without closing the sidebar.
+	function goToLayout() {
+		selectedCardId = null;
+		selectedSectionId = null;
+	}
+
+	function goToSection() {
+		selectedCardId = null;
+	}
 
 	function resizeSelectedCard(w: number, h: number) {
 		if (!selectedCard) return;
@@ -168,8 +234,6 @@
 		onLayoutChanged();
 	}
 
-	// svelte-ignore state_referenced_locally
-	let activeSectionId = $state(sections[0]?.id);
 	let gridContainer = $derived(
 		activeSectionId ? gridRefs.get(activeSectionId) : gridRefs.values().next().value
 	);
@@ -306,8 +370,6 @@
 		}
 	}
 
-	let showSectionsSidebar = $state(false);
-
 	function addSection(sectionType: string, afterIndex?: number) {
 		const sorted = sections.toSorted((a, b) => a.index - b.index);
 		let newIndex: number;
@@ -330,6 +392,8 @@
 		};
 		sections = [...sections, section];
 		hasUnsavedChanges = true;
+		// Drill straight into the new section's settings.
+		openSection(section.id);
 	}
 
 	function deleteSection(id: string) {
@@ -339,8 +403,45 @@
 		if (activeSectionId === id) {
 			activeSectionId = sections[0]?.id;
 		}
+		// Drop back to the layout overview after removing a section.
+		if (selectedSectionId === id) {
+			selectedSectionId = null;
+			selectedCardId = null;
+		}
 		hasUnsavedChanges = true;
 	}
+
+	function moveSection(id: string, dir: -1 | 1) {
+		const sorted = sections.toSorted((a, b) => a.index - b.index);
+		const idx = sorted.findIndex((s) => s.id === id);
+		const swapIdx = idx + dir;
+		if (idx === -1 || swapIdx < 0 || swapIdx >= sorted.length) return;
+		const a = sorted[idx];
+		const b = sorted[swapIdx];
+		const tmp = a.index;
+		a.index = b.index;
+		b.index = tmp;
+		sections = [...sections];
+		hasUnsavedChanges = true;
+	}
+
+	// Double-click an empty area of a section to open its settings. Delegated from
+	// the sections container so we don't add a handler per section. Ignores clicks
+	// on cards and on interactive/editable elements (e.g. section text editors).
+	let sectionsContainer: HTMLDivElement | undefined = $state();
+	$effect(() => {
+		const el = sectionsContainer;
+		if (!el || !sectionsEditingEnabled) return;
+		const onDbl = (e: MouseEvent) => {
+			const t = e.target as HTMLElement;
+			if (t.closest('.card, button, a, input, textarea, select, [contenteditable="true"]')) return;
+			const secEl = t.closest('[data-section-id]') as HTMLElement | null;
+			const id = secEl?.dataset.sectionId;
+			if (id) openSection(id);
+		};
+		el.addEventListener('dblclick', onDbl);
+		return () => el.removeEventListener('dblclick', onDbl);
+	});
 
 	function addLink(url: string, specificCardDef?: CardDefinition) {
 		let link = validateLink(url);
@@ -429,11 +530,16 @@
 
 <!-- <PageSwitcherBar {data} /> -->
 
-<!-- {#if sectionsEditingEnabled}
+{#if sectionsEditingEnabled && !selectedCard}
 	<button
 		type="button"
-		class="bg-base-100 dark:bg-base-950 border-base-200 dark:border-base-800 text-base-600 dark:text-base-400 hover:text-base-800 dark:hover:text-base-200 fixed bottom-3 left-3 z-20 flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium shadow-md transition-colors"
-		onclick={() => (showSectionsSidebar = !showSectionsSidebar)}
+		class={[
+			'fixed bottom-3 left-3 z-20 flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium shadow-md transition-colors',
+			cardSettingsOpen && sidebarLevel === 'layout'
+				? 'bg-accent-500 border-accent-500 text-white'
+				: 'bg-base-100 dark:bg-base-950 border-base-200 dark:border-base-800 text-base-600 dark:text-base-400 hover:text-base-800 dark:hover:text-base-200'
+		]}
+		onclick={toggleLayout}
 	>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
@@ -450,20 +556,8 @@
 			<path d="M3 15h18" />
 		</svg>
 		Layout
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			class="size-3"
-		>
-			<path d="m6 9 6 6 6-6" />
-		</svg>
 	</button>
-{/if} -->
+{/if}
 
 <SettingsOverlay bind:data publicationUrl={data.publication?.url} />
 
@@ -515,30 +609,35 @@
 		page={data.page}
 	/>
 
-	<CardSettingsSidebar
+	<SettingsSidebar
 		open={cardSettingsOpen}
+		level={sidebarLevel}
+		sectionsEnabled={sectionsEditingEnabled}
 		item={selectedCard}
+		section={selectedSection}
+		{sections}
+		bind:items
+		bind:data
 		{isMobile}
+		canDeleteSection={sections.length > 1}
 		onResize={resizeSelectedCard}
-		onclose={() => {
-			if (isMobile) {
-				cardSettingsOpen = false;
-			} else {
-				selectedCardId = null;
-			}
-		}}
+		onlayoutchange={onLayoutChanged}
+		onselectsection={openSection}
+		onselectcard={(id) => (selectedCardId = id)}
+		onaddsection={addSection}
+		ondeletesection={deleteSection}
+		onmovesection={moveSection}
+		ongotolayout={goToLayout}
+		ongotosection={goToSection}
+		onclose={deselect}
 	/>
 
 	<MobileSelectionBar
 		{data}
 		visible={isRealMobile && selectedCard !== null && !cardSettingsOpen}
 		onopensettings={() => (cardSettingsOpen = true)}
-		ondeselect={() => (selectedCardId = null)}
+		ondeselect={deselect}
 	/>
-
-	<!-- {#if sectionsEditingEnabled}
-		<SectionsSidebar bind:open={showSectionsSidebar} bind:sections bind:activeSectionId bind:data />
-	{/if} -->
 
 	<MobileWarningModal bind:showMobileWarning />
 
@@ -653,42 +752,43 @@
 		<div
 			class={[
 				'pointer-events-none relative mx-auto max-w-lg',
-				(!getHideProfileSection(data) && getProfilePosition(data) === 'side') ||
-				(showSectionsSidebar && getHideProfileSection(data)) ||
-				cardSettingsOpen
+				(!getHideProfileSection(data) && getProfilePosition(data) === 'side') || cardSettingsOpen
 					? '@5xl/wrapper:grid @5xl/wrapper:max-w-7xl @5xl/wrapper:grid-cols-4'
 					: '@5xl/wrapper:max-w-4xl'
 			]}
 		>
 			<div class="pointer-events-none"></div>
-			<div class="@5xl/wrapper:col-start-2 @5xl/wrapper:-col-end-1">
+			<div bind:this={sectionsContainer} class="@5xl/wrapper:col-start-2 @5xl/wrapper:-col-end-1">
 				{#each sections.toSorted((a, b) => a.index - b.index) as section, i (section.id)}
 					{@const def = SectionDefinitionsByType[section.sectionType]}
 					{#if def}
-						<def.editingContentComponent
-							{section}
-							bind:items
-							{isMobile}
-							{selectedCardId}
-							{isCoarse}
-							isActive={activeSectionId === section.id}
-							onrefchange={(el) => {
-								if (el) gridRefs.set(section.id, el);
-								else gridRefs.delete(section.id);
-							}}
-							onlayoutchange={onLayoutChanged}
-							ondeselect={() => {
-								selectedCardId = null;
-							}}
-							onrequestaddcard={(extraData) => {
-								activeSectionId = section.id;
-								requestAddCard(extraData);
-							}}
-							oncreatefilecards={createFileCards}
-							onactivate={() => {
-								activeSectionId = section.id;
-							}}
-						/>
+						<div class="contents" data-section-id={section.id}>
+							<def.editingContentComponent
+								{section}
+								bind:items
+								{isMobile}
+								{selectedCardId}
+								{isCoarse}
+								isActive={activeSectionId === section.id}
+								onrefchange={(el) => {
+									if (el) gridRefs.set(section.id, el);
+									else gridRefs.delete(section.id);
+								}}
+								onlayoutchange={onLayoutChanged}
+								ondeselect={deselect}
+								onrequestaddcard={(extraData) => {
+									activeSectionId = section.id;
+									requestAddCard(extraData);
+								}}
+								oncreatefilecards={createFileCards}
+								onactivate={() => {
+									activeSectionId = section.id;
+								}}
+							/>
+						</div>
+					{/if}
+					{#if sectionsEditingEnabled}
+						<InsertSectionButton onadd={(type) => addSection(type, i)} />
 					{/if}
 				{/each}
 				<div class="h-20"></div>

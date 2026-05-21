@@ -36,10 +36,4 @@
 	<meta name="twitter:image" content={data.ogImage} />
 </svelte:head>
 
-<EventView
-	{data}
-	{adapter}
-	{viewer}
-	pageUrl={page.url}
-	shareUrlOverride={data.shareUrl}
-/>
+<EventView {data} {adapter} {viewer} pageUrl={page.url} shareUrlOverride={data.shareUrl} />

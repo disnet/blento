@@ -8,11 +8,7 @@ import {
 	resolveHandle
 } from '$lib/atproto/methods';
 import { atProtoLoginModalState } from '$lib/atproto/LoginModal.svelte';
-import type {
-	EditorAdapter,
-	EditorBlobRef,
-	EditorViewer
-} from '@atmo-dev/events-ui';
+import type { EditorAdapter, EditorBlobRef, EditorViewer } from '@atmo-dev/events-ui';
 
 export type { EditorAdapter, EditorBlobRef, EditorViewer };
 

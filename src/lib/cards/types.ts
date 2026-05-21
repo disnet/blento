@@ -94,6 +94,18 @@ export type CardDefinition = {
 	canChange?: (item: Item) => boolean;
 	change?: (item: Item) => Item;
 
+	// Config for the shared `SourceSettings` sidebar panel (edit the card's source URL).
+	// Set `settingsComponent: SourceSettings` on the card to use it.
+	source?: {
+		label?: string;
+		placeholder?: string;
+		errorMessage?: string;
+		// Current URL to pre-fill (default: item.cardData.href).
+		currentUrl?: (item: Item) => string;
+		// Apply a new URL; return false if invalid. Default: wraps `onUrlHandler`.
+		apply?: (url: string, item: Item) => boolean;
+	};
+
 	name?: string;
 
 	canHaveLabel?: boolean;

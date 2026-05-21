@@ -2,7 +2,7 @@
 	import { marked } from 'marked';
 	import { sanitize } from '$lib/sanitize';
 	import type { ContentComponentProps } from '../../types';
-	import { textAlignClasses, textSizeClasses, verticalAlignClasses } from '.';
+	import { textAlignClasses, textSizeClasses, verticalAlignClasses } from './styles';
 	import { cn } from '@foxui/core';
 
 	let { item }: ContentComponentProps = $props();

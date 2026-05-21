@@ -1,25 +1,65 @@
 <script lang="ts">
 	import { COLUMNS } from '$lib';
 	import { CardDefinitionsByType, getColor } from '$lib/cards';
-	import type { Item } from '$lib/types';
+	import type { Item, SectionRecord, WebsiteData } from '$lib/types';
+	import { SectionDefinitionsByType } from '$lib/sections';
 	import { ColorSelect } from '@foxui/colors';
 	import { dev } from '$app/environment';
+	import LayoutPanel from './LayoutPanel.svelte';
+	import SectionPanel from './SectionPanel.svelte';
 
 	let {
 		open,
+		// Which level the sidebar is showing. With sections disabled it is always 'card'.
+		level = 'card',
+		sectionsEnabled = false,
 		item,
+		section,
+		sections,
+		items = $bindable([]),
+		data = $bindable(),
 		isMobile,
+		canDeleteSection = false,
 		onResize,
+		onlayoutchange = () => {},
+		onselectsection = () => {},
+		onselectcard = () => {},
+		onaddsection = () => {},
+		ondeletesection = () => {},
+		onmovesection = () => {},
+		ongotolayout = () => {},
+		ongotosection = () => {},
 		onclose
 	}: {
 		open: boolean;
+		level?: 'card' | 'section' | 'layout';
+		sectionsEnabled?: boolean;
 		item: Item | null;
+		section?: SectionRecord | null;
+		sections?: SectionRecord[];
+		items?: Item[];
+		data: WebsiteData;
 		isMobile: boolean;
+		canDeleteSection?: boolean;
 		onResize: (w: number, h: number) => void;
+		onlayoutchange?: () => void;
+		onselectsection?: (id: string) => void;
+		onselectcard?: (id: string) => void;
+		onaddsection?: (type: string) => void;
+		ondeletesection?: (id: string) => void;
+		onmovesection?: (id: string, dir: -1 | 1) => void;
+		ongotolayout?: () => void;
+		ongotosection?: () => void;
 		onclose: () => void;
 	} = $props();
 
 	const cardDef = $derived(item ? (CardDefinitionsByType[item.cardType] ?? null) : null);
+
+	const sectionDef = $derived(section ? SectionDefinitionsByType[section.sectionType] : null);
+	const sectionName = $derived(
+		section ? section.name || sectionDef?.name || section.sectionType : ''
+	);
+	const cardName = $derived(item ? item.cardData?.label || cardDef?.name || item.cardType : '');
 
 	const specialColors = ['base', 'accent', 'transparent'] as const;
 	const colorModes = ['base', 'accent', 'transparent', 'custom'] as const;
@@ -121,10 +161,14 @@
 	];
 	const tabs = $derived(allTabs.filter((t) => t.id !== 'content' || cardDef?.settingsComponent));
 	let activeTab: TabId = $state('content');
+	let lastItemId: string | null = null;
 	$effect(() => {
 		// When the selected card changes, default to Content if available, else Design.
-		item?.id;
-		activeTab = cardDef?.settingsComponent ? 'content' : 'design';
+		const currentId = item?.id ?? null;
+		if (currentId !== lastItemId) {
+			lastItemId = currentId;
+			activeTab = cardDef?.settingsComponent ? 'content' : 'design';
+		}
 	});
 </script>
 
@@ -135,13 +179,53 @@
 	]}
 >
 	<div class="border-base-200 dark:border-base-800 border-b px-4 pt-3">
-		<div class="flex items-center justify-between">
-			<h2 class="text-base-900 dark:text-base-100 text-sm font-semibold">Card settings</h2>
+		<div class="flex items-center justify-between gap-2">
+			{#if sectionsEnabled}
+				<nav class="flex min-w-0 flex-1 items-center gap-0.5 text-sm">
+					<button
+						type="button"
+						class={[
+							'shrink-0 cursor-pointer rounded px-1 py-0.5',
+							level === 'layout'
+								? 'text-base-900 dark:text-base-100 font-semibold'
+								: 'text-base-500 hover:text-base-700 dark:text-base-400 dark:hover:text-base-200'
+						]}
+						onclick={ongotolayout}
+					>
+						Layout
+					</button>
+					{#if section && (level === 'section' || level === 'card')}
+						<span class="text-base-300 dark:text-base-600 shrink-0">›</span>
+						<button
+							type="button"
+							class={[
+								'min-w-0 cursor-pointer truncate rounded px-1 py-0.5',
+								level === 'section'
+									? 'text-base-900 dark:text-base-100 font-semibold'
+									: 'text-base-500 hover:text-base-700 dark:text-base-400 dark:hover:text-base-200'
+							]}
+							onclick={ongotosection}
+						>
+							{sectionName}
+						</button>
+					{/if}
+					{#if level === 'card' && item}
+						<span class="text-base-300 dark:text-base-600 shrink-0">›</span>
+						<span
+							class="text-base-900 dark:text-base-100 min-w-0 truncate px-1 py-0.5 font-semibold"
+						>
+							{cardName}
+						</span>
+					{/if}
+				</nav>
+			{:else}
+				<h2 class="text-base-900 dark:text-base-100 text-sm font-semibold">Card settings</h2>
+			{/if}
 			<button
 				type="button"
-				class="text-base-500 hover:text-base-700 dark:text-base-400 dark:hover:text-base-200 cursor-pointer rounded-lg p-1"
+				class="text-base-500 hover:text-base-700 dark:text-base-400 dark:hover:text-base-200 shrink-0 cursor-pointer rounded-lg p-1"
 				onclick={onclose}
-				aria-label="Close card settings"
+				aria-label="Close settings"
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -155,7 +239,7 @@
 				</svg>
 			</button>
 		</div>
-		{#if tabs.length > 1}
+		{#if level === 'card' && tabs.length > 1}
 			<nav class="-mb-px flex gap-1 pt-3">
 				{#each tabs as tab (tab.id)}
 					<button
@@ -177,7 +261,27 @@
 		{/if}
 	</div>
 
-	{#if item && cardDef}
+	{#if sectionsEnabled && level === 'layout'}
+		<LayoutPanel
+			sections={sections ?? []}
+			bind:data
+			{items}
+			selectedSectionId={section?.id ?? null}
+			{onselectsection}
+			{onaddsection}
+			{onmovesection}
+		/>
+	{:else if sectionsEnabled && level === 'section' && section}
+		<SectionPanel
+			{section}
+			bind:items
+			canDelete={canDeleteSection}
+			{onlayoutchange}
+			{onclose}
+			{onselectcard}
+			ondelete={() => section && ondeletesection(section.id)}
+		/>
+	{:else if item && cardDef}
 		<div class="flex flex-col gap-6 px-4 py-4">
 			{#if activeTab === 'content' && cardDef.settingsComponent}
 				<cardDef.settingsComponent {item} {onclose} />

@@ -22,10 +22,4 @@
 	<title>Create event · Blento</title>
 </svelte:head>
 
-<EventEditor
-	{adapter}
-	{viewer}
-	{rkey}
-	actorDid={viewer.did ?? ''}
-	eventData={null}
-/>
+<EventEditor {adapter} {viewer} {rkey} actorDid={viewer.did ?? ''} eventData={null} />

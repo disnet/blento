@@ -2,17 +2,13 @@
 	import { Button, Popover } from '@foxui/core';
 	import { AllSectionDefinitions } from '$lib/sections';
 
-	let {
-		onadd
-	}: {
-		onadd: (sectionType: string) => void;
-	} = $props();
+	let { onadd }: { onadd: (sectionType: string) => void } = $props();
 
-	let popoverOpen = $state(false);
+	let open = $state(false);
 </script>
 
-<div class="pointer-events-auto relative col-span-3 flex w-full items-center justify-center py-1">
-	<Popover bind:open={popoverOpen}>
+<div class="pointer-events-auto relative flex w-full items-center justify-center py-1">
+	<Popover bind:open>
 		{#snippet child({ props })}
 			<button
 				{...props}
@@ -43,13 +39,11 @@
 					class="justify-start gap-2 text-sm"
 					onclick={() => {
 						onadd(def.type);
-						popoverOpen = false;
+						open = false;
 					}}
 				>
 					{#if def.icon}
-						<span class="text-base-500 dark:text-base-400">
-							{@html def.icon}
-						</span>
+						<span class="text-base-500 dark:text-base-400 [&>svg]:size-4">{@html def.icon}</span>
 					{/if}
 					{def.name}
 				</Button>
