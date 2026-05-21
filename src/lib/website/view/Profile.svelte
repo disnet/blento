@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { marked } from 'marked';
-	import { sanitize } from '$lib/sanitize';
+	import { sanitize } from '$lib/helpers/sanitize';
 	import type { WebsiteData } from '$lib/types';
-	import { getDescription, getImage, getName, getProfilePosition } from '$lib/helper';
+	import { getImage } from '$lib/helpers/images';
+	import { getDescription, getName, getProfilePosition } from '$lib/helpers/website';
 	import { page } from '$app/state';
 	import { qrOverlay } from '$lib/components/qr/qrOverlay.svelte';
 	import MadeWithBlento from './MadeWithBlento.svelte';
 	import { Avatar } from '@foxui/core';
-	import Pronouns from '../components/Pronouns.svelte';
+	import Pronouns from '../../components/Pronouns.svelte';
 
 	let {
 		data

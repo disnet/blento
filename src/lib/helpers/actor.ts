@@ -1,7 +1,7 @@
 import type { ActorIdentifier, Did } from '@atcute/lexicons';
 import type { CacheService } from './cache';
 import { env as publicEnv } from '$env/dynamic/public';
-import { resolveHandle } from './atproto';
+import { resolveHandle } from '../atproto';
 import { isHandle } from '@atcute/lexicons/syntax';
 
 export async function getActor({

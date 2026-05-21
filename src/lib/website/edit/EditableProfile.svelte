@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { WebsiteData } from '$lib/types';
-	import { getImage, compressImage, getProfilePosition } from '$lib/helper';
+	import { getImage, compressImage } from '$lib/helpers/images';
+	import { getProfilePosition } from '$lib/helpers/website';
 	import PlainTextEditor from '$lib/components/PlainTextEditor.svelte';
 	import MarkdownTextEditor from '$lib/components/MarkdownTextEditor.svelte';
 	import { Avatar } from '@foxui/core';
-	import MadeWithBlento from './MadeWithBlento.svelte';
-	import Pronouns from '../components/Pronouns.svelte';
+	import MadeWithBlento from '../view/MadeWithBlento.svelte';
+	import Pronouns from '../../components/Pronouns.svelte';
 
 	let { data = $bindable(), hideBlento = false }: { data: WebsiteData; hideBlento?: boolean } =
 		$props();

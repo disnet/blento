@@ -1,16 +1,16 @@
 <script lang="ts">
 	import Profile from './Profile.svelte';
+	import { getImage } from '$lib/helpers/images';
 	import {
 		getDescription,
 		getHideProfileSection,
 		getProfilePosition,
-		getName,
-		getImage
-	} from '../helper';
+		getName
+	} from '$lib/helpers/website';
 	import { innerWidth } from 'svelte/reactivity/window';
-	import { setDidContext, setHandleContext, setIsMobile } from './context';
+	import { setDidContext, setHandleContext, setIsMobile } from '../data/context';
 	import type { WebsiteData } from '$lib/types';
-	import Context from './Context.svelte';
+	import ContextProvider from './ContextProvider.svelte';
 	import { SectionDefinitionsByType } from '$lib/sections';
 	import MadeWithBlento from './MadeWithBlento.svelte';
 	import Head from './Head.svelte';
@@ -61,7 +61,7 @@
 	baseColor={data.publication?.preferences?.baseColor}
 />
 
-<Context {data}>
+<ContextProvider {data}>
 	<QRModalProvider />
 	<ImageViewerProvider />
 	<div class="@container/wrapper relative w-full overflow-x-hidden">
@@ -100,4 +100,4 @@
 
 		<MadeWithBlento class="mx-auto block pb-8 text-center @5xl/wrapper:hidden" />
 	</div>
-</Context>
+</ContextProvider>

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { compressImage, getImage } from '$lib/helper';
-	import { getDidContext } from '$lib/website/context';
+	import { compressImage, getImage } from '$lib/helpers/images';
+	import { getDidContext } from '$lib/website/data/context';
 	import { Button } from '@foxui/core';
 
 	let {

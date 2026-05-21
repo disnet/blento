@@ -1,7 +1,12 @@
 <script lang="ts">
 	import type { WebsiteData } from '$lib/types';
 	import type { Snippet } from 'svelte';
-	import { setAdditionalUserData, setCanEdit, setDidContext, setHandleContext } from './context';
+	import {
+		setAdditionalUserData,
+		setCanEdit,
+		setDidContext,
+		setHandleContext
+	} from '../data/context';
 	import { dev } from '$app/environment';
 	import { user } from '$lib/atproto';
 	import type { Did, Handle } from '@atcute/lexicons';

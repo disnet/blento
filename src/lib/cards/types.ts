@@ -1,6 +1,6 @@
 import type { Component } from 'svelte';
 import type { Item } from '$lib/types';
-import type { CacheService } from '$lib/cache';
+import type { CacheService } from '$lib/helpers/cache';
 import type { Did } from '@atcute/lexicons';
 
 export type CreationModalComponentProps = {

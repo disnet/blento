@@ -2,10 +2,11 @@
 	import { dev } from '$app/environment';
 	// import { page } from '$app/state';
 	import { logout, user } from '$lib/atproto';
-	import { getImage, getName } from '$lib/helper';
+	import { getImage } from '$lib/helpers/images';
+	import { getName } from '$lib/helpers/website';
 	import type { WebsiteData } from '$lib/types';
 	import { Avatar, Button, Popover, Toggle } from '@foxui/core';
-	import { settingsOverlayState } from './settings/SettingsOverlay.svelte';
+	import { settingsOverlayState } from '../settings/SettingsOverlay.svelte';
 
 	let {
 		data,

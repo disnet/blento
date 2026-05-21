@@ -1,8 +1,8 @@
 import { getDetailedProfile, listRecords, resolveHandle, parseUri, getRecord } from '$lib/atproto';
 import { getCDNImageBlobUrl } from '$lib/atproto/methods';
 import { CardDefinitionsByType } from '$lib/cards';
-import type { CacheService } from '$lib/cache';
-import { createEmptyCard } from '$lib/helper';
+import type { CacheService } from '$lib/helpers/cache';
+import { createEmptyCard } from '$lib/helpers/items';
 import type { Item, PronounsRecord, SectionRecord, WebsiteData } from '$lib/types';
 import { ensureSections } from '$lib/sections/migrate';
 import { error } from '@sveltejs/kit';

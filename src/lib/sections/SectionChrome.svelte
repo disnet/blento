@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { isSectionsEditingEnabled } from './feature-flag';
-	import { getDidContext, getOpenSectionSettings } from '$lib/website/context';
+	import { getDidContext, getOpenSectionSettings } from '$lib/website/data/context';
 
 	let {
 		sectionId,

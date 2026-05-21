@@ -15,7 +15,7 @@
 		getSelectedCardId,
 		getSelectCard,
 		getToggleCardSettings
-	} from '$lib/website/context';
+	} from '$lib/website/data/context';
 	import PlainTextEditor from '$lib/components/PlainTextEditor.svelte';
 
 	const customColorChoices = [

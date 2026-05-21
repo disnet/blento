@@ -2,7 +2,7 @@
 	import { Button, Popover } from '@foxui/core';
 	import type { Item, SectionRecord, WebsiteData } from '$lib/types';
 	import { AllSectionDefinitions, SectionDefinitionsByType } from '$lib/sections';
-	import { getHideProfileSection, getProfilePosition } from '$lib/helper';
+	import { getHideProfileSection, getProfilePosition } from '$lib/helpers/website';
 
 	let {
 		sections,

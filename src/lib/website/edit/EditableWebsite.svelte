@@ -1,23 +1,17 @@
 <script lang="ts">
 	import { Button, Modal, toast, Toaster } from '@foxui/core';
-	import {
-		checkAndUploadImage,
-		createEmptyCard,
-		getHideProfileSection,
-		getProfilePosition,
-		getName,
-		isTyping,
-		savePage,
-		scrollToItem,
-		validateLink,
-		getImage
-	} from '../helper';
+	import { checkAndUploadImage, getImage } from '$lib/helpers/images';
+	import { createEmptyCard, scrollToItem } from '$lib/helpers/items';
+	import { getHideProfileSection, getProfilePosition, getName } from '$lib/helpers/website';
+	import { savePage } from '$lib/helpers/save';
+	import { validateLink } from '$lib/helpers/links';
+	import { isTyping } from '$lib/helpers/utils';
 	import EditableProfile from './EditableProfile.svelte';
-	import type { Item, WebsiteData } from '../types';
+	import type { Item, WebsiteData } from '../../types';
 	import { innerWidth } from 'svelte/reactivity/window';
-	import { AllCardDefinitions, CardDefinitionsByType } from '../cards';
+	import { AllCardDefinitions, CardDefinitionsByType } from '../../cards';
 	import { tick, type Component } from 'svelte';
-	import type { CardDefinition, CreationModalComponentProps } from '../cards/types';
+	import type { CardDefinition, CreationModalComponentProps } from '../../cards/types';
 	import { dev } from '$app/environment';
 	import { env } from '$env/dynamic/public';
 	import {
@@ -28,10 +22,10 @@
 		setSelectCard,
 		setToggleCardSettings,
 		setOpenSectionSettings
-	} from './context';
-	import Context from './Context.svelte';
-	import Head from './Head.svelte';
-	import SettingsOverlay from './settings/SettingsOverlay.svelte';
+	} from '../data/context';
+	import ContextProvider from '../view/ContextProvider.svelte';
+	import Head from '../view/Head.svelte';
+	import SettingsOverlay from '../settings/SettingsOverlay.svelte';
 	import SettingsSidebar from './SettingsSidebar.svelte';
 	import InsertSectionButton from './InsertSectionButton.svelte';
 	import EditTopBar from './EditTopBar.svelte';
@@ -42,7 +36,7 @@
 	import * as TID from '@atcute/tid';
 	import { launchConfetti } from '@foxui/visual';
 
-	import { createImageCard, createVideoCard } from './file-processing';
+	import { createImageCard, createVideoCard } from '../data/file-processing';
 	import CardCommand from '$lib/components/card-command/CardCommand.svelte';
 	import ImageViewerProvider from '$lib/components/image-viewer/ImageViewerProvider.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -561,7 +555,7 @@
 
 <SettingsOverlay bind:data publicationUrl={data.publication?.url} />
 
-<Context {data} isEditing={true}>
+<ContextProvider {data} isEditing={true}>
 	<ImageViewerProvider />
 	<CardCommand
 		bind:open={showCardCommand}
@@ -827,4 +821,4 @@
 	{/if}
 
 	<Toaster />
-</Context>
+</ContextProvider>

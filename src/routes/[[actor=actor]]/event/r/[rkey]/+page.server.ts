@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { getActor } from '$lib/actor';
+import { getActor } from '$lib/helpers/actor';
 import {
 	fetchAtmoEvent,
 	fetchAtmoEventAttendees,

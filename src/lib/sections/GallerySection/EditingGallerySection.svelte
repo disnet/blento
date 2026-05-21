@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { ImageMasonry } from '@foxui/visual';
 	import { Button } from '@foxui/core';
-	import { getDidContext, getSelectCard } from '$lib/website/context';
-	import { getImage } from '$lib/helper';
+	import { getDidContext, getSelectCard } from '$lib/website/data/context';
+	import { getImage } from '$lib/helpers/images';
 	import type { EditingSectionContentProps } from '../types';
 	import SectionChrome from '../SectionChrome.svelte';
 

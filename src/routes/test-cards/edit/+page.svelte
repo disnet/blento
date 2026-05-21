@@ -1,5 +1,5 @@
 <script lang="ts">
-	import EditableWebsite from '$lib/website/EditableWebsite.svelte';
+	import EditableWebsite from '$lib/website/edit/EditableWebsite.svelte';
 	import { buildTestData, loadAllAdditionalData } from '../build-data';
 
 	const data = buildTestData();

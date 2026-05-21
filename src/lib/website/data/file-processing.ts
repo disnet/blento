@@ -1,4 +1,4 @@
-import { createEmptyCard } from '$lib/helper';
+import { createEmptyCard } from '$lib/helpers/items';
 import type { Item } from '$lib/types';
 
 export function getImageDimensions(src: string): Promise<{ width: number; height: number }> {

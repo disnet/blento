@@ -2,7 +2,7 @@ import { COLUMNS } from '$lib';
 import { AllCardDefinitions, CardDefinitionsByType } from '$lib/cards';
 import { fixAllCollisions, compactItems } from '$lib/layout';
 import type { Item, SectionRecord, WebsiteData } from '$lib/types';
-import { createEmptyCard } from '$lib/helper';
+import { createEmptyCard } from '$lib/helpers/items';
 import * as TID from '@atcute/tid';
 import type { Did } from '@atcute/lexicons';
 import type { AppBskyActorDefs } from '@atcute/bluesky';

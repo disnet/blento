@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { SettingsComponentProps } from '../../types';
-	import { validateLink } from '$lib/helper';
+	import { validateLink } from '$lib/helpers/links';
 	import { Button, Input, toast } from '@foxui/core';
 	import {
 		SettingsSection,

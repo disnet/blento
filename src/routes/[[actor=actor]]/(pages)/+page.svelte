@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Website from '$lib/website/Website.svelte';
+	import Website from '$lib/website/view/Website.svelte';
 
 	let { data } = $props();
 </script>
