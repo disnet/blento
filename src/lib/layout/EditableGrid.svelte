@@ -274,15 +274,6 @@
 		};
 	});
 
-	// For touch: register non-passive touchstart to prevent scroll when touching selected card
-	$effect(() => {
-		if (!container || !selectedCardId) return;
-		container.addEventListener('touchstart', handleTouchStart, { passive: false });
-		return () => {
-			container?.removeEventListener('touchstart', handleTouchStart);
-		};
-	});
-
 	// For touch: register non-passive touchmove to prevent scroll during active drag
 	$effect(() => {
 		if (phase !== 'active' || !container) return;
@@ -299,18 +290,6 @@
 		// Deselect when tapping empty grid space
 		if (e.target === e.currentTarget || !(e.target as HTMLElement)?.closest?.('.card')) {
 			ondeselect();
-		}
-	}
-
-	function handleTouchStart(e: TouchEvent) {
-		// On touch, prevent scrolling when touching the selected card
-		// This must happen on touchstart (not pointerdown) to claim the gesture
-		const cardEl = (e.target as HTMLElement)?.closest?.('.card') as HTMLElement | null;
-		if (cardEl && cardEl.id === selectedCardId) {
-			const item = items.find((i) => i.id === cardEl.id);
-			if (item && !item.cardData?.locked) {
-				e.preventDefault();
-			}
 		}
 	}
 

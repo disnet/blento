@@ -2,7 +2,7 @@ import { json } from '@sveltejs/kit';
 import { contrail, ensureInit } from '$lib/contrail';
 import { listRecords } from '$lib/atproto/methods';
 import { collections } from '$lib/atproto/settings';
-import { getActor } from '$lib/actor';
+import { getActor } from '$lib/helpers/actor';
 import type { Did } from '@atcute/lexicons';
 import { dev } from '$app/environment';
 

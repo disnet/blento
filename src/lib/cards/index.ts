@@ -64,6 +64,7 @@ import { KichRecipeCollectionCardDefinition } from './social/KichRecipeCollectio
 import { KichCookingLogCardDefinition } from './social/KichCookingLogCard';
 import { SecretImageCardDefinition } from './media/SecretImageCard';
 import { RPGActorCardDefinition } from './social/RPGActorCard';
+import { ButtondownCardDefinition } from './social/ButtondownCard';
 import { BufoStatusCardDefinition } from './social/BufoStatusCard';
 // import { Model3DCardDefinition } from './visual/Model3DCard';
 
@@ -135,6 +136,7 @@ export const AllCardDefinitions = [
 	KichCookingLogCardDefinition,
 	SecretImageCardDefinition,
 	RPGActorCardDefinition,
+	ButtondownCardDefinition,
 	BufoStatusCardDefinition
 ] as const;
 
